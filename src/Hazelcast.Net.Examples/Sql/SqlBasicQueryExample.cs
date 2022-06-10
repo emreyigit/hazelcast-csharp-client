@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hazelcast.Models;
 using Hazelcast.Sql;
+using Hazelcast.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Hazelcast.Examples.Sql
@@ -44,39 +46,57 @@ namespace Hazelcast.Examples.Sql
             //see details: https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping
             await client.Sql.ExecuteCommandAsync(
                 $"CREATE MAPPING {map.Name} TYPE IMap OPTIONS ('keyFormat'='int', 'valueFormat'='varchar')");
-            
-            // query and print all rows
+
+            //// query and print all rows
+            //{
+            //    await using var result = await client.Sql.ExecuteQueryAsync($"SELECT __key, this FROM {map.Name}");
+
+            //    var count = 1;
+            //    await foreach (var row in result)
+            //        logger.LogInformation("Row #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
+            //}
+
+            //// query and print all rows sorted by key descending
+            //{
+            //    // index must be added to be able to sort by attribute
+            //    await map.AddIndexAsync(IndexType.Sorted, "__key");
+
+            //    await using var result = await client.Sql.ExecuteQueryAsync($"SELECT __key, this FROM {map.Name} ORDER BY __key DESC");
+
+            //    var count = 1;
+            //    await foreach (var row in result)
+            //        logger.LogInformation("Row (sorted) #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
+            //}
+
+            //// query and print rows filtered via parameters
+            //{
+            //    var (min, max) = (3, 7);
+            //    await using var result = await client.Sql.ExecuteQueryAsync(
+            //        $"SELECT __key, this FROM {map.Name} WHERE __key >= ? and __key <= ?",
+            //        min, max
+            //    );
+
+            //    var count = 1;
+            //    await foreach (var row in result)
+            //        logger.LogInformation("Row (filtered) #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
+            //}
+
             {
-                await using var result = await client.Sql.ExecuteQueryAsync($"SELECT __key, this FROM {map.Name}");
 
-                var count = 1;
-                await foreach (var row in result)
-                    logger.LogInformation("Row #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
-            }
+                //We have to call AsQueryable() because of ambiguity between different enumerable interfaces, IAsyncEnumerable vs IQuerable LINQ extension.
+                await using var sqlResult = await map.AsQueryable()
+                                                        .Where(x => x.Key == 1)
+                                                        .GetAsync();
 
-            // query and print all rows sorted by key descending
-            {
-                // index must be added to be able to sort by attribute
-                await map.AddIndexAsync(IndexType.Sorted, "__key");
+                var result = map.AsQueryable().Where(x => x.Key == 1).ToList(); //throws since we don't support sync operations. Should we by blocking the thread??
 
-                await using var result = await client.Sql.ExecuteQueryAsync($"SELECT __key, this FROM {map.Name} ORDER BY __key DESC");
+                //GetAsync is our extension to provide async call since regular linq operations does not support async operations.
+                //There is an iterface but it is under Entity Framework package which means a dependency.
 
-                var count = 1;
-                await foreach (var row in result)
-                    logger.LogInformation("Row (sorted) #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
-            }
+                //Rest is same with Sql usage. It can be consumed as async.
+                await foreach (var row in sqlResult)
+                    logger.LogInformation(row.GetKey<int>() + "-" + row.GetValue<string>());
 
-            // query and print rows filtered via parameters
-            {
-                var (min, max) = (3, 7);
-                await using var result = await client.Sql.ExecuteQueryAsync(
-                    $"SELECT __key, this FROM {map.Name} WHERE __key >= ? and __key <= ?",
-                    min, max
-                );
-
-                var count = 1;
-                await foreach (var row in result)
-                    logger.LogInformation("Row (filtered) #{RowCount}: {RowKey}, {RowValue}", count++, row.GetKey<int>(), row.GetValue<string>());
             }
         }
     }

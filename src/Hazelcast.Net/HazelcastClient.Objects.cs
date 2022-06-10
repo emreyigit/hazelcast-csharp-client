@@ -57,8 +57,8 @@ namespace Hazelcast
 
             HMap<TKey, TValue> CreateMap(string n, DistributedObjectFactory factory, Cluster cluster, SerializationService serializationService, ILoggerFactory loggerFactory)
                 => nearCacheOptions == null
-                    ? new HMap<TKey, TValue>(n, factory, cluster, serializationService, _lockReferenceIdSequence, loggerFactory)
-                    : new HMapWithCache<TKey, TValue>(n, factory, cluster, serializationService, _lockReferenceIdSequence, nearCache, loggerFactory);
+                    ? new HMap<TKey, TValue>(n, factory, cluster, serializationService, _lockReferenceIdSequence, loggerFactory, new Linq.QueryProvider(Sql, n))
+                    : new HMapWithCache<TKey, TValue>(n, factory, cluster, serializationService, _lockReferenceIdSequence, nearCache, loggerFactory, new Linq.QueryProvider(Sql, n));
 
             return await _distributedOjects.GetOrCreateAsync<IHMap<TKey, TValue>, HMap<TKey, TValue>>(ServiceNames.Map, name, true, CreateMap).CfAwait();
         }
@@ -74,7 +74,7 @@ namespace Hazelcast
 
             var task = _distributedOjects.GetOrCreateAsync<IHReplicatedMap<TKey, TValue>, HReplicatedMap<TKey, TValue>>(ServiceNames.ReplicatedMap, name, true,
                 (n, f, c, sr, lf)
-                    => new HReplicatedMap<TKey,TValue>(n, f, c, sr, partitionId, lf));
+                    => new HReplicatedMap<TKey, TValue>(n, f, c, sr, partitionId, lf));
 
 #if HZ_OPTIMIZE_ASYNC
             return task;
