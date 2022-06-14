@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+﻿// Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,20 +24,20 @@ namespace Hazelcast.Linq
     {
         internal readonly ISqlService SqlService;
         private readonly string _mapName;
+        private readonly QueryTranslator _translator;
 
         public QueryProvider(ISqlService sqlService, string mapName)
         {
             SqlService = sqlService;
+            _translator = new QueryTranslator(mapName);
             _mapName = mapName;
         }
 
         public IQueryable CreateQuery(Expression expression)
         {
-            var eType = expression.Type;
-
             try
             {
-                return (IQueryable)Activator.CreateInstance(typeof(MapQuery<>).MakeGenericType(eType), new object[] { this, expression });
+                return (IQueryable)Activator.CreateInstance(typeof(MapQuery<>).MakeGenericType(expression.Type), new object[] { this, expression });
             }
             catch (TargetInvocationException ex)
             {
@@ -55,10 +55,11 @@ namespace Hazelcast.Linq
             throw new NotImplementedException("Synchron operations on map are not supported. Please, invoke GetAsync() extension.");
         }
 
-        public string GetQueryText()
+        public string GetQueryText(Expression expression)
         {
-            //TODO: implement a translator from expression to sql string
-            return "select * from " + _mapName;
+            var sql = _translator.Translate(ExpressionEvaluator.EvaluatePartially(expression));
+            Console.WriteLine("QUERY: " + sql);//todo:refactor.            
+            return sql;
         }
 
         public TResult Execute<TResult>(Expression expression)

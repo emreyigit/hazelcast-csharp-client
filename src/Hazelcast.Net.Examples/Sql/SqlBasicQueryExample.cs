@@ -45,7 +45,7 @@ namespace Hazelcast.Examples.Sql
             //Before you can query data in a map, you need to create a mapping to one, using the map connector.
             //see details: https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping
             await client.Sql.ExecuteCommandAsync(
-                $"CREATE MAPPING {map.Name} TYPE IMap OPTIONS ('keyFormat'='int', 'valueFormat'='varchar')");
+               $"CREATE MAPPING {map.Name} TYPE IMap OPTIONS ('keyFormat'='int', 'valueFormat'='varchar')");
 
             //// query and print all rows
             //{
@@ -83,19 +83,51 @@ namespace Hazelcast.Examples.Sql
 
             {
 
+                //  var result = map.AsQueryable().Where(x => x.Key == 1).ToList(); //throws since we don't support sync operations. Should we? by blocking the thread??
+
+                var min = 1;//local fields will be evaluated.     
+
                 //We have to call AsQueryable() because of ambiguity between different enumerable interfaces, IAsyncEnumerable vs IQuerable LINQ extension.
                 await using var sqlResult = await map.AsQueryable()
-                                                        .Where(x => x.Key == 1)
+                                                        .Where(x => x.Key > min && x.Key < 10)
                                                         .GetAsync();
 
-                var result = map.AsQueryable().Where(x => x.Key == 1).ToList(); //throws since we don't support sync operations. Should we by blocking the thread??
+                //SQL: 
 
                 //GetAsync is our extension to provide async call since regular linq operations does not support async operations.
                 //There is an iterface but it is under Entity Framework package which means a dependency.
+                //In future, if IAsyncQuerable will be available under .NET, we may also implement that.
 
                 //Rest is same with Sql usage. It can be consumed as async.
+                //If we use ISqlQueryResult, user cannot use custom projection on data. Should we go to that way?
+                //Ex: this is not valid now -> map.AsQueryable().Select(p=> p.LastName+", "+p.Name).GetAsync();
+                
                 await foreach (var row in sqlResult)
                     logger.LogInformation(row.GetKey<int>() + "-" + row.GetValue<string>());
+
+
+                //OUTPUT:
+
+                /*
+                    QUERY: SELECT * FROM (SELECT * FROM SqlBasicQueryExample) AS T WHERE ((__key > 1) AND (__key < 10))
+
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          2-Value #2
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          8-Value #8
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          5-Value #5
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          4-Value #4
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          9-Value #9
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          6-Value #6
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          7-Value #7
+                    info: Hazelcast.Examples.Sql.SqlBasicQueryExample[0]
+                          3-Value #3                 
+                  */
 
             }
         }
