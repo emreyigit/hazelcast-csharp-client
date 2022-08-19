@@ -17,15 +17,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using Hazelcast.Sql;
 
 namespace Hazelcast.Linq
 {
-    internal class MapQuery<T> : IOrderedQueryable<T>, IQueryable<T>
+    internal class MapQuery<TKey, TValue> : IOrderedAsyncQueryable<KeyValuePair<TKey, TValue>>, IAsyncQueryable<KeyValuePair<TKey, TValue>>
     {
         private QueryProvider _queryProvider;
         private Expression _expression;
+        private IAsyncEnumerable<KeyValuePair<TKey, TValue>>? _enumerable;
 
         public MapQuery(QueryProvider provider, Expression expression) : this(provider)
         {
@@ -40,20 +43,17 @@ namespace Hazelcast.Linq
                 _expression = Expression.Constant(this);
         }
 
-        public Type ElementType => typeof(T);
+        public Type ElementType => typeof(KeyValuePair<TKey, TValue>);
 
         public Expression Expression => _expression;
 
-        public IQueryProvider Provider => _queryProvider;
+        public IAsyncQueryProvider Provider => _queryProvider;
 
-        public IEnumerator<T> GetEnumerator()
+        public  IAsyncEnumerator<KeyValuePair<TKey, TValue>> GetAsyncEnumerator(CancellationToken token)
         {
-            return ((IEnumerable<T>)_queryProvider.Execute(_expression)).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            token.ThrowIfCancellationRequested();
+            
+            return _queryProvider.Execute<IAsyncEnumerator<KeyValuePair<TKey, TValue>>>(_expression);
         }
     }
 }

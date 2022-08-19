@@ -13,14 +13,18 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using Hazelcast.Core;
 using Hazelcast.Sql;
 
 namespace Hazelcast.Linq
 {
-    internal class QueryProvider : IQueryProvider
+    internal class QueryProvider : IAsyncQueryProvider
     {
         internal readonly ISqlService SqlService;
         private readonly string _mapName;
@@ -33,26 +37,9 @@ namespace Hazelcast.Linq
             _mapName = mapName;
         }
 
-        public IQueryable CreateQuery(Expression expression)
+        public Task<ISqlQueryResult> ExecuteQuery(Expression expression)
         {
-            try
-            {
-                return (IQueryable)Activator.CreateInstance(typeof(MapQuery<>).MakeGenericType(expression.Type), new object[] { this, expression });
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
-        public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
-        {
-            return new MapQuery<TElement>(this, expression);
-        }
-
-        public object Execute(Expression expression)
-        {
-            throw new NotImplementedException("Synchron operations on map are not supported. Please, invoke GetAsync() extension.");
+            return this.SqlService.ExecuteQueryAsync(this.GetQueryText(expression));
         }
 
         public string GetQueryText(Expression expression)
@@ -62,9 +49,40 @@ namespace Hazelcast.Linq
             return sql;
         }
 
+        IAsyncQueryable<TElement> IAsyncQueryProvider.CreateQuery<TElement>(Expression expression)
+        {
+            try
+            {
+                Console.WriteLine(typeof(TElement));
+                Console.WriteLine(expression.Type);
+                var itemType = typeof(TElement);
+
+                var mapq = Activator.CreateInstance(typeof(MapQuery<,>).MakeGenericType(itemType.GenericTypeArguments), new object[] { this, expression });
+
+                return ((IAsyncQueryable<TElement>)mapq);
+
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
         public TResult Execute<TResult>(Expression expression)
         {
-            return (TResult)Execute(expression);
+            var itemType = typeof(TResult);
+            var keyvalueType = itemType.GenericTypeArguments[0].GetTypeInfo().GetGenericArguments();
+            var enumerable = (TResult)Activator.CreateInstance(typeof(ObjectReaderWriter<,>).MakeGenericType(keyvalueType), new object[] { this, expression });
+            return enumerable;
+        }
+
+        public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
+        {
+            Console.WriteLine("GetAsyncEnumerator");
+            //todo: pass the token
+
+
+            return this.Execute<TResult>(expression);
         }
     }
 }

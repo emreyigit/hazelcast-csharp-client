@@ -45,7 +45,7 @@ namespace Hazelcast.Examples.Sql
             //Before you can query data in a map, you need to create a mapping to one, using the map connector.
             //see details: https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping
             await client.Sql.ExecuteCommandAsync(
-               $"CREATE MAPPING {map.Name} TYPE IMap OPTIONS ('keyFormat'='int', 'valueFormat'='varchar')");
+               $"CREATE OR REPLACE MAPPING {map.Name} TYPE IMap OPTIONS ('keyFormat'='int', 'valueFormat'='varchar')");
 
             //// query and print all rows
             //{
@@ -88,9 +88,8 @@ namespace Hazelcast.Examples.Sql
                 var min = 1;//local fields will be evaluated.     
 
                 //We have to call AsQueryable() because of ambiguity between different enumerable interfaces, IAsyncEnumerable vs IQuerable LINQ extension.
-                await using var sqlResult = await map.AsQueryable()
-                                                        .Where(x => x.Key > min && x.Key < 10)
-                                                        .GetAsync();
+                var sqlResult = map.AsAsyncQueryable().Where(x => x.Key > min && x.Key < 10);
+
 
                 //SQL: 
 
@@ -101,9 +100,11 @@ namespace Hazelcast.Examples.Sql
                 //Rest is same with Sql usage. It can be consumed as async.
                 //If we use ISqlQueryResult, user cannot use custom projection on data. Should we go to that way?
                 //Ex: this is not valid now -> map.AsQueryable().Select(p=> p.LastName+", "+p.Name).GetAsync();
-                
-                await foreach (var row in sqlResult)
-                    logger.LogInformation(row.GetKey<int>() + "-" + row.GetValue<string>());
+
+                var result = await sqlResult.ToListAsync();
+
+                 foreach (var row in result)
+                    logger.LogInformation(row.Key + " - " + row.Value);
 
 
                 //OUTPUT:

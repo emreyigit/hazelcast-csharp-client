@@ -23,16 +23,14 @@ namespace Hazelcast.DistributedObjects.Impl
 {
     internal partial class HMap<TKey, TValue> // LINQ
     {
-        private MapQuery<KeyValuePair<TKey, TValue>> _mapQuery;
+        private MapQuery<TKey, TValue> _mapQuery;
 
         public Type ElementType => typeof(KeyValuePair<TKey, TValue>);
 
         public Expression Expression => _mapQuery.Expression;
 
-        public IQueryProvider Provider => _mapQuery.Provider;
+        public IAsyncQueryProvider Provider => _mapQuery.Provider;
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _mapQuery.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IAsyncEnumerator<KeyValuePair<TKey, TValue>> IAsyncEnumerable<KeyValuePair<TKey, TValue>>.GetAsyncEnumerator(System.Threading.CancellationToken cancellationToken) => _mapQuery.GetAsyncEnumerator(cancellationToken);
     }
 }

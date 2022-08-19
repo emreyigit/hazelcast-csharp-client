@@ -30,6 +30,12 @@ namespace Hazelcast.Linq
             _mapName = mapName;
         }
 
+        internal Expression TranslateAsExpression(Expression expression)
+        {
+            _sb = new StringBuilder();
+            return Visit(expression);
+        }
+
         internal string Translate(Expression expression)
         {
             _sb = new StringBuilder();
@@ -117,7 +123,7 @@ namespace Hazelcast.Linq
 
         protected override Expression VisitConstant(ConstantExpression node)
         {
-            IQueryable q = node.Value as IQueryable;
+            IAsyncQueryable q = node.Value as IAsyncQueryable;
 
             if (q != null)
             {
@@ -178,7 +184,7 @@ namespace Hazelcast.Linq
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Method.DeclaringType == typeof(Queryable) && node.Method.Name == "Where")
+            if (node.Method.DeclaringType == typeof(AsyncQueryable) && node.Method.Name == "Where")
             {
                 _sb.Append("SELECT * FROM (");
                 this.Visit(node.Arguments[0]);

@@ -48,7 +48,7 @@ namespace Hazelcast.DistributedObjects.Impl
             : base(ServiceNames.Map, name, factory, cluster, serializationService, logggerFactory)
         {
             _lockReferenceIdSequence = lockReferenceIdSequence;
-            _mapQuery = new MapQuery<KeyValuePair<TKey, TValue>>(queryProvider);
+            _mapQuery = new MapQuery<TKey, TValue>(queryProvider);
         }
     }
 }
