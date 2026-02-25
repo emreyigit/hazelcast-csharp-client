@@ -36,6 +36,12 @@ namespace Hazelcast.Tests.Serialization
                 return _inner.Rent(minSize);
             }
 
+            public byte[] RentUncleared(int minSize)
+            {
+                Interlocked.Increment(ref RentCount);
+                return _inner.RentUncleared(minSize);
+            }
+
             public void Return(byte[] buffer)
             {
                 Interlocked.Increment(ref ReturnCount);

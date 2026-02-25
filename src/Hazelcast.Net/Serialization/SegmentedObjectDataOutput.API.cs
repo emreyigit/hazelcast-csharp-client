@@ -84,7 +84,10 @@ namespace Hazelcast.Serialization
 
         public void WriteBits(byte bits, byte mask)
         {
+            var isFreshByte = GetAbsolutePosition() >= _totalLength;
             var span = GetSpanForPrimitive(BytesExtensions.SizeOfByte);
+            if (isFreshByte)
+                span[0] = 0; // clear garbage from uncleared buffer before read-modify-write
             span.WriteBits(0, bits, mask);
         }
 

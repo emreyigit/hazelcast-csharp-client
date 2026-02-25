@@ -144,7 +144,6 @@ namespace Hazelcast.Tests.Serialization
             var actualStr = (string[]) _serializationService.ToObject<object>(dataStrArray);
             Assert.AreEqual(SerializationConstants.ConstantTypeStringArray, dataStrArray.TypeId);
             Assert.AreEqual(stringArray, actualStr);
-
         }
 
         [Test]

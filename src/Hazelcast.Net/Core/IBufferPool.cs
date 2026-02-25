@@ -17,6 +17,7 @@ namespace Hazelcast.Core
     internal interface IBufferPool
     {
         byte[] Rent(int minimumLength);
+        byte[] RentUncleared(int minimumLength);
         void Return(byte[] array);
     }
 }

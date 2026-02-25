@@ -28,10 +28,10 @@ namespace Hazelcast.Serialization
     internal sealed partial class SegmentedObjectDataOutput : IObjectDataOutput, ICanHaveSchemas, IDisposable, IResettable, IBufferWriter<byte>
     {
         // Track all rented arrays so we can return them to the pool
-        private readonly List<byte[]> _rentedArrays = new List<byte[]>();
+        private readonly List<byte[]> _rentedArrays = new List<byte[]>(4);
 
         // Track committed length for each chunk (except current chunk which uses _positionInChunk)
-        private readonly List<int> _committedLengths = new List<int>();
+        private readonly List<int> _committedLengths = new List<int>(4);
 
         private byte[] _currentChunk;
         private int _currentChunkIndex;
@@ -42,6 +42,8 @@ namespace Hazelcast.Serialization
         private HashSet<long> _schemaIds;
         private IBufferPool _bufferPool;
         private readonly IWriteObjectsToObjectDataOutput _objectsWriter;
+        private Encoder _utf8Encoder;
+        private List<Segment> _segmentPool = new List<Segment>(4);
 
         public SegmentedObjectDataOutput(int initialChunkSize, IWriteObjectsToObjectDataOutput objectsReaderWriter, Endianness endianness, IBufferPool bufferPool)
         {
@@ -49,7 +51,7 @@ namespace Hazelcast.Serialization
             _objectsWriter = objectsReaderWriter;
             Endianness = endianness;
             _minChunkSize = initialChunkSize;
-            _currentChunk = _bufferPool.Rent(_minChunkSize);
+            _currentChunk = _bufferPool.RentUncleared(_minChunkSize);
             _rentedArrays.Add(_currentChunk);
         }
         public Endianness Endianness { get; }
@@ -94,7 +96,12 @@ namespace Hazelcast.Serialization
 
         private void WriteFragmentedString(ReadOnlySpan<char> source)
         {
-            var encoder = Encoding.UTF8.GetEncoder();
+            if (_utf8Encoder == null)
+                _utf8Encoder = Encoding.UTF8.GetEncoder();
+            else
+                _utf8Encoder.Reset();
+
+            var encoder = _utf8Encoder;
             var destination = GetSpan(4); // at least 4 bytes for max UTF-8 bytes per char
             var charSource = source;
 
@@ -136,9 +143,12 @@ namespace Hazelcast.Serialization
                 return new ReadOnlySequence<byte>(_rentedArrays[0], 0, _committedLengths[0]);
             }
 
-            // Multi-segment: use committed lengths for all chunks
+            // Multi-segment: use committed lengths for all chunks, reusing pooled Segment objects
+            var segmentCount = 0;
             var firstLength = _committedLengths[0];
-            var firstSegment = new Segment(_rentedArrays[0], 0, firstLength);
+
+            var firstSegment = GetOrCreateSegment(segmentCount++);
+            firstSegment.Update(_rentedArrays[0], 0, firstLength, runningIndex: 0);
             var lastSegment = firstSegment;
 
             for (int i = 1; i < _rentedArrays.Count; i++)
@@ -148,10 +158,26 @@ namespace Hazelcast.Serialization
                 // Don't append empty segments
                 if (length == 0) break;
 
-                lastSegment = lastSegment.Append(_rentedArrays[i], length);
+                var next = GetOrCreateSegment(segmentCount++);
+                next.Update(_rentedArrays[i], 0, length, runningIndex: lastSegment.RunningIndex + lastSegment.Memory.Length);
+                lastSegment.SetNext(next);
+                lastSegment = next;
             }
 
+            // Clear the Next pointer on the last segment so stale links don't leak
+            lastSegment.SetNext(null);
+
             return new ReadOnlySequence<byte>(firstSegment, 0, lastSegment, lastSegment.Memory.Length);
+        }
+
+        private Segment GetOrCreateSegment(int index)
+        {
+            if (index < _segmentPool.Count)
+                return _segmentPool[index];
+
+            var segment = new Segment();
+            _segmentPool.Add(segment);
+            return segment;
         }
 
         /// <summary>
@@ -232,7 +258,7 @@ namespace Hazelcast.Serialization
             UpdateCurrentChunkCommittedLength();
             _basePosition += _committedLengths[_currentChunkIndex]; // accumulate before switching
 
-            _currentChunk = _bufferPool.Rent(sizeHint);
+            _currentChunk = _bufferPool.RentUncleared(sizeHint);
             _rentedArrays.Add(_currentChunk);
             _currentChunkIndex = _rentedArrays.Count - 1;
             _positionInChunk = 0;
@@ -355,7 +381,8 @@ namespace Hazelcast.Serialization
         public bool TryReset()
         {
             Dispose();
-            _currentChunk = _bufferPool.Rent(_minChunkSize);
+            _utf8Encoder?.Reset();
+            _currentChunk = _bufferPool.RentUncleared(_minChunkSize);
             _rentedArrays.Add(_currentChunk);
             // No committed length for the first chunk - it uses _positionInChunk
             _currentChunkIndex = 0;
@@ -378,20 +405,15 @@ namespace Hazelcast.Serialization
         /// </summary>
         private sealed class Segment : ReadOnlySequenceSegment<byte>
         {
-            public Segment(byte[] array, int start, int length)
+            public void Update(byte[] array, int start, int length, long runningIndex)
             {
                 Memory = new ReadOnlyMemory<byte>(array, start, length);
-                RunningIndex = 0;
+                RunningIndex = runningIndex;
             }
 
-            public Segment Append(byte[] array, int length)
+            public void SetNext(Segment next)
             {
-                var next = new Segment(array, 0, length)
-                {
-                    RunningIndex = RunningIndex + Memory.Length
-                };
                 Next = next;
-                return next;
             }
         }
     }

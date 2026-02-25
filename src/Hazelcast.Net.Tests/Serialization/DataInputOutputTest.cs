@@ -171,6 +171,13 @@ namespace Hazelcast.Tests.Serialization
                     return myBufferPool.Rent(minSize);
                 });
 
+            mockBufferPool.RentUncleared(Arg.Any<int>())
+                .Returns(callInfo =>
+                {
+                    var minSize = callInfo.Arg<int>();
+                    return myBufferPool.RentUncleared(minSize);
+                });
+
             mockBufferPool.When(x => x.Return(Arg.Any<byte[]>()))
                 .Do(callInfo =>
                 {
@@ -205,7 +212,7 @@ namespace Hazelcast.Tests.Serialization
 
             // SegmentedObjectDataOutput rents multiple chunks per write and returns them on TryReset,
             // so exact counts depend on chunk sizing. Verify pool is actively used.
-            mockBufferPool.Received(Quantity.AtLeastOne()).Rent(Arg.Any<int>());
+            mockBufferPool.Received(Quantity.AtLeastOne()).RentUncleared(Arg.Any<int>());
             mockBufferPool.Received(Quantity.AtLeastOne()).Return(Arg.Any<byte[]>());
         }
 
@@ -238,6 +245,13 @@ namespace Hazelcast.Tests.Serialization
                 Interlocked.Increment(ref RentCount);
                 TestContext.Progress.WriteLine($"[DataInputOutputTest] MyBufferPool.Rent called. minSize={minSize}, RentCount={RentCount}");
                 return _inner.Rent(minSize);
+            }
+
+            public byte[] RentUncleared(int minSize)
+            {
+                Interlocked.Increment(ref RentCount);
+                TestContext.Progress.WriteLine($"[DataInputOutputTest] MyBufferPool.RentUncleared called. minSize={minSize}, RentCount={RentCount}");
+                return _inner.RentUncleared(minSize);
             }
 
             public void Return(byte[] buffer)

@@ -27,6 +27,11 @@ namespace Hazelcast.Core
             return buffer;
         }
 
+        public byte[] RentUncleared(int minimumLength)
+        {
+            return _pool.Rent(minimumLength);
+        }
+
         public void Return(byte[] array)
         {
             if (array != null)
