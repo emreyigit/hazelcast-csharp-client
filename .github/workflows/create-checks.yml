@@ -230,18 +230,6 @@ jobs:
           list-tests: failed
           fail-on-error: false
 
-      # report test results via NUnit XML - always (includes full stack traces that TRX drops)
-      - name: Report test results (NUnit XML)
-        if: steps.unzip.outputs.results == 'true' || steps.move.outputs.results == 'true'
-        uses: dorny/test-reporter@v1
-        with:
-          name: Test Results (details)
-          path: ./temp/test-results/*/results-*.xml
-          reporter: dotnet-nunit
-          list-suites: failed
-          list-tests: failed
-          fail-on-error: false
-
       # report test coverage - if build&test was successful
       - name: Report test coverage
         if: inputs.coverage && inputs.conclusion == 'success' && (steps.unzip.outputs.coverage == 'true' || steps.move.outputs.coverage == 'true')
