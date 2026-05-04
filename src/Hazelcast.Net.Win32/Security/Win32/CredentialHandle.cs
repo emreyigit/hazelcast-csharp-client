@@ -44,15 +44,19 @@ namespace Hazelcast.Security.Win32
         }
     }
 
+    /// <summary>Represents a Windows SSPI credential handle.</summary>
     public class CredentialHandle : SafeHandle
     {
+        /// <summary>Initializes a new instance of the <see cref="CredentialHandle"/> class.</summary>
         public unsafe CredentialHandle(void* cred)
             : base(new IntPtr(cred), true)
         {
         }
 
+        /// <inheritdoc />
         public override bool IsInvalid => base.handle == IntPtr.Zero;
 
+        /// <inheritdoc />
         protected override bool ReleaseHandle()
         {
             return true;

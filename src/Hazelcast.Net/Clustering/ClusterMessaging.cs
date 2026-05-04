@@ -196,7 +196,12 @@ namespace Hazelcast.Clustering
         /// <summary>
         /// Sends an invocation request message.
         /// </summary>
-        /// <param name="invocation">The invocation.</param>
+        /// <param name="message">The message to send.</param>
+        /// <param name="connectionGiven">An optional specific connection to use.</param>
+        /// <param name="targetPartitionId">An optional target partition identifier.</param>
+        /// <param name="targetMemberId">An optional target member identifier.</param>
+        /// <param name="correlationId">A correlation identifier.</param>
+        /// <param name="raiseEvents">Whether to raise events.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The response message.</returns>
         private async Task<ClientMessage> SendAsyncInternal(ClientMessage message, MemberConnection connectionGiven, int targetPartitionId,

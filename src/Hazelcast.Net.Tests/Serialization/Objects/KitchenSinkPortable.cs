@@ -100,10 +100,10 @@ namespace Hazelcast.Tests.Serialization.Objects
              
         /// <summary>
         /// Generates a portable object with data. Also used to size strings in the string arrays.
-        /// n(where 0<n<=len(randomstring)) length of string array will be like["x", "xx", "xxx", ....., "xxx..xxx"].
+        /// n(where 0 &lt; n &lt;= len(randomstring)) length of string array will be like["x", "xx", "xxx", ....., "xxx..xxx"].
         /// It will allow to test deseriazliser with various size of strings.
         /// </summary>
-        /// <param name="arraySize">arraySize">Size of for array type fields</param>
+        /// <param name="arraySize">Size of for array type fields</param>
         /// <returns></returns>
         public static KitchenSinkPortable Generate(int arraySize = 5)
         {

@@ -45,7 +45,7 @@ namespace Hazelcast.Tests.Serialization.Compact
             }
         }
 
-        private static string GetRandomName(string prefix) => $"{prefix}-{Guid.NewGuid().ToString("N")[..7]}";
+        private new static string GetRandomName(string prefix) => $"{prefix}-{Guid.NewGuid().ToString("N")[..7]}";
 
         private async Task<string> SetUpCluster(Schema schema)
         {

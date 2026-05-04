@@ -17,6 +17,7 @@ using Hazelcast.DistributedObjects.Impl;
 
 namespace Hazelcast.Linq
 {
+    /// <summary>Extension methods for <see cref="IHMap{TKey,TValue}"/> providing LINQ support.</summary>
     public static class HMapExtension
     {
         /// <summary>

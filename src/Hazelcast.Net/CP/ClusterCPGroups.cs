@@ -79,7 +79,7 @@ namespace Hazelcast.CP
             _logger.IfDebug()?.LogDebug("CP groups updated to Version {Version}." +
                                         " Old groups count: {OldCount}, new count: {NewCount}", Version, oldCount, groups.Count);
         }
-        private Dictionary<CPGroupId, Guid> MapCPtoAPUuids(IList<KeyValuePair<Guid, Guid>> cpToApUuids, ICollection<CPGroupInfo> groupInfos)
+        private static Dictionary<CPGroupId, Guid> MapCPtoAPUuids(IList<KeyValuePair<Guid, Guid>> cpToApUuids, ICollection<CPGroupInfo> groupInfos)
         {
             var mapIds = new Dictionary<CPGroupId, Guid>();
 

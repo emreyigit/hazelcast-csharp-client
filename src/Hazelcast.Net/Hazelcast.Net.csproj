@@ -21,6 +21,9 @@
   <PropertyGroup>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <!-- CA1873: false positive - IfDebug()?.Log...() pattern already guards against argument evaluation -->
+    <!-- CA1865: char overloads not available in netstandard2.0 -->
+    <NoWarn>$(NoWarn);CA1873;CA1865</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

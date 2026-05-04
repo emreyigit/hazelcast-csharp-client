@@ -129,7 +129,9 @@ namespace Hazelcast.Serialization
             //   then object itself implements the (de) serialization methods
             var dataSerializer = new DataSerializer(hooks.Hooks, dataSerializableFactories, loggerFactory);
             _dataSerializerAdapter = CreateSerializerAdapter<IIdentifiedDataSerializable>(dataSerializer);
+#pragma warning disable CA2263
             RegisterConstantSerializer(_dataSerializerAdapter, typeof(IIdentifiedDataSerializable));
+#pragma warning restore CA2263
 
             // Registers the constant 'compact serializer', which implements compact serialization.
             // Own the ISchemas instance and make sure to dispose it
@@ -172,7 +174,9 @@ namespace Hazelcast.Serialization
             _portableContext = new PortableContext(this, portableVersion);
             _portableSerializer = new PortableSerializer(_portableContext, portableFactories);
             _portableSerializerAdapter = CreateSerializerAdapter<IPortable>(_portableSerializer);
+#pragma warning disable CA2263
             RegisterConstantSerializer(_portableSerializerAdapter, typeof(IPortable));
+#pragma warning restore CA2263
             RegisterPortableClassDefinitions(portableClassDefinitions, validatePortableClassDefinitions);
 
             // Registers the global serializer, if any.

@@ -99,7 +99,9 @@ internal class Authenticator
     /// <summary>
     /// Authenticates a TPC connection.
     /// </summary>
+#pragma warning disable CA1822 // CA1822: method may gain instance access in the future
     public async ValueTask<bool> AuthenticateTpcAsync(MemberConnection client, ClientMessageConnection connection, Guid clientId, byte[] token, CancellationToken cancellationToken)
+#pragma warning restore CA1822
     {
         var message = TpcClientChannelAuthenticationCodec.EncodeRequest(clientId, token);
         message.InvocationFlags |= InvocationFlags.InvokeWhenNotConnected;

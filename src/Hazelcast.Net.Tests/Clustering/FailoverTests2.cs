@@ -457,7 +457,7 @@ public class FailoverTests2 : HazelcastTestBase
     }
 
     /// <summary>
-    /// Asserts that the client is connected to the expected cluster & can access the specified map.
+    /// Asserts that the client is connected to the expected cluster &amp; can access the specified map.
     /// </summary>
     public async Task AssertCluster(IHazelcastClient client, string expectedClusterName, IHMap<string, string> map)
     {

@@ -245,7 +245,9 @@ namespace Hazelcast.Tests.Models
                 Assert.AreEqual(dateTimeValue.ToString("yyyy-MM-dd"), localDateValue.ToString());
                 Assert.False(refLocalDateVal!= localDateValue);
                 // ReSharper disable once EqualExpressionComparison
+#pragma warning disable CS1718
                 Assert.True(localDateValue == localDateValue);
+#pragma warning restore CS1718
                 Assert.True(localDateValue.Equals(refLocalDateVal));
                 Assert.True(localDateValue.Equals((object)refLocalDateVal));
             }
@@ -331,9 +333,11 @@ namespace Hazelcast.Tests.Models
                 );
                 
                 // ReSharper disable once EqualExpressionComparison
+#pragma warning disable CS1718
                 Assert.False(offsetDateTimeValue != offsetDateTimeValue);
                 // ReSharper disable once EqualExpressionComparison
                 Assert.True(offsetDateTimeValue == offsetDateTimeValue);
+#pragma warning restore CS1718
                 Assert.True(offsetDateTimeValue.Equals(offsetDateTimeValue));
                 Assert.True(offsetDateTimeValue.Equals((object)offsetDateTimeValue));
             }

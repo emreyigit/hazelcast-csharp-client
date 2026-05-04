@@ -29,6 +29,7 @@ namespace Hazelcast.Security
         //
         // and that same code works both for .NET Framework and .NET Core
 
+        /// <summary>Gets a Kerberos token for the specified service principal name.</summary>
         public byte[] GetToken(string spn, string username, string password, string domain)
         {
             SspiContext context;

@@ -14,6 +14,9 @@
 using System.Linq;
 namespace Hazelcast.Models
 {
+    /// <summary>
+    /// Represents a single dense float vector value.
+    /// </summary>
     public class SingleVectorValues : VectorValues
     {
         internal SingleVectorValues() { }
@@ -21,6 +24,8 @@ namespace Hazelcast.Models
         {
             Vector = vector;
         }
+
+        /// <summary>Gets the vector data.</summary>
         public float[] Vector { get; }
         
         

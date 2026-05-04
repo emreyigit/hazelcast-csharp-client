@@ -17,6 +17,7 @@ using System;
 
 namespace Hazelcast.DependencyInjection;
 
+/// <summary>Extension methods for <see cref="HazelcastOptionsBase"/> and its derivatives.</summary>
 public static class HazelcastOptionsExtensions
 {
     /// <summary>

@@ -966,7 +966,7 @@ namespace Hazelcast.Clustering
             RemoveCompletion();
             return connection;
         }
-        private async Task ThrowInvalidPartitionGroup(MemberConnection connection)
+        private static async Task ThrowInvalidPartitionGroup(MemberConnection connection)
         {
             await connection.DisposeAsync().CfAwait();
             throw new InvalidPartitionGroupException("No member group is received from server as partition group." +

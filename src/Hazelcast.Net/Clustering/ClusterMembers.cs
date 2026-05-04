@@ -151,7 +151,7 @@ namespace Hazelcast.Clustering
         // is considered connected - but then, the "match" logic cannot work and must be refactored.
         // but, it's something that no other client offers - decision = disable it entirely for now.
 
-        private bool MatchMemberAddress
+        private static bool MatchMemberAddress
             //=> _clusterState.Options.Networking.SmartRouting || _clusterState.Options.Networking.Cloud.Enabled;
             => false;
 
@@ -161,8 +161,10 @@ namespace Hazelcast.Clustering
         public ClusterCPGroups ClusterCPGroups => _cpGroups;
 
         // see notes above, if matching then addresses must match, else anything matches
+#pragma warning disable CA1822 // CA1822: relies on MatchMemberAddress which may become non-constant
         public bool IsMemberAddress(MemberInfo member, NetworkAddress address)
             => !MatchMemberAddress || member.ConnectAddress == address;
+#pragma warning restore CA1822
 
         // Gets filtered members for multi member connections.
         public ISubsetClusterMembers SubsetClusterMembers => _subsetClusterMembers;

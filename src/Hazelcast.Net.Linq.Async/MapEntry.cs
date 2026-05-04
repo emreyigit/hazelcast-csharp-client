@@ -22,6 +22,9 @@ namespace Hazelcast.Linq
     /// <typeparam name="TValue">Type of Value</typeparam>
     public struct MapEntry<TKey, TValue>
     {
+        /// <summary>Initializes a new instance of the <see cref="MapEntry{TKey,TValue}"/> struct.</summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
         public MapEntry(TKey key, TValue value)
         {
             Key = key;
@@ -40,7 +43,7 @@ namespace Hazelcast.Linq
 
 
         /// <summary>
-        /// Deconstructs the current <see cref="MapEntry{TKey,TValue}."/>
+        /// Deconstructs the current <see cref="MapEntry{TKey,TValue}"/>.
         /// </summary>
         public void Deconstruct(out TKey key, out TValue value)
         {

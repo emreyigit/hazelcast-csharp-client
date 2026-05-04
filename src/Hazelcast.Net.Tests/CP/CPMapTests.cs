@@ -31,7 +31,6 @@ namespace Hazelcast.Tests.CP;
 public class CPMapTests : MultiMembersRemoteTestBase
 {
     private string _defaultMapName = "myMap";
-    private string _groupName = "group1";
 
     private List<Member> _members = new();
     public IHazelcastClient Client { get; private set; }

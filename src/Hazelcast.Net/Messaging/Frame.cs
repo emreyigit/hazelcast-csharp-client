@@ -74,6 +74,7 @@ namespace Hazelcast.Messaging
         /// <param name="rentedArray">The array rented from <see cref="System.Buffers.ArrayPool{T}"/>.</param>
         /// <param name="length">The number of valid bytes starting at index 0.</param>
         /// <param name="flags">The frame flags.</param>
+        /// <param name="pool">The pool to return the array to when done; or <c>null</c> if none.</param>
         public Frame(byte[] rentedArray, int length, FrameFlags flags, ArrayPool<byte> pool = null)
         {
             Flags = flags;

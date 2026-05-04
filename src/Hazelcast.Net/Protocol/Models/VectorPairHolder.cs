@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System;
 using System.Linq;
 namespace Hazelcast.Protocol.Models
 {
@@ -37,12 +38,12 @@ namespace Hazelcast.Protocol.Models
             if (this == obj) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
             var that = (VectorPairHolder) obj;
-            return Name.Equals(that.Name) && Vector.SequenceEqual(that.Vector);
+            return Name.Equals(that.Name, StringComparison.Ordinal) && Vector.SequenceEqual(that.Vector);
         }
 
         public override int GetHashCode()
         {
-            var result = 31 * Name.GetHashCode();
+            var result = 31 * Name.GetHashCode(StringComparison.Ordinal);
             result = 31 * result + Type.GetHashCode();
             result = 31 * result + Vector.GetHashCode();
             return result;

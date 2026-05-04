@@ -105,7 +105,7 @@ namespace Hazelcast.Clustering
         }
 
         // internal for testing
-        internal MemberGroups GetBiggestGroup(MemberGroups newGroup)
+        internal static MemberGroups GetBiggestGroup(MemberGroups newGroup)
         {
             var maxCount = int.MinValue;
             HashSet<Guid> biggestGroup = null;

@@ -17,11 +17,14 @@ using Microsoft.Extensions.Hosting;
 
 namespace Hazelcast.DependencyInjection
 {
+    /// <summary>Extension methods for <see cref="IHostBuilder"/>.</summary>
     public static class HostBuilderExtensions
     {
+        /// <summary>Configures Hazelcast with default settings.</summary>
         public static IHostBuilder ConfigureHazelcast(this IHostBuilder hostBuilder)
             => hostBuilder.ConfigureHazelcast(Array.Empty<string>());
 
+        /// <summary>Configures Hazelcast with the specified command-line arguments.</summary>
         public static IHostBuilder ConfigureHazelcast(this IHostBuilder builder, string[] args)
         {
             return builder.ConfigureAppConfiguration((hostingContext, hostBuilder) =>

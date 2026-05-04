@@ -28,7 +28,7 @@ namespace Hazelcast.Serialization
         private int _prefixBias; // bytes reserved at start of buffer via ReservePrefix
         private HashSet<long> _schemaIds;
         private IBufferPool _bufferPool;
-        private bool _initialized = false;
+        private bool _initialized;
         internal ObjectDataOutput(int initialBufferSize, IWriteObjectsToObjectDataOutput objectsReaderWriter, Endianness endianness, IBufferPool bufferPool)
         {
             _initialBufferSize = initialBufferSize;

@@ -90,8 +90,6 @@ namespace Hazelcast.Tests.Networking
 {
     public abstract class ClientSslTestBase : RemoteTestBase
     {
-        private IDisposable _console;
-
         protected static TimeSpan TestTimeout = TimeSpan.FromSeconds(30);
 
 #if SSLCERTS_JAVA
@@ -252,8 +250,6 @@ namespace Hazelcast.Tests.Networking
         [TearDown]
         public async Task TearDown()
         {
-            _console?.Dispose();
-
             // terminate & remove member
             if (RcMember != null)
             {

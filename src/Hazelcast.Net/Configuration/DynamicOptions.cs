@@ -134,7 +134,7 @@ public class DynamicOptions
         return mapped;
     }
 
-    private List<ListenerConfigHolder> MapListenerConfigs<T>(List<T> listenerConfigs)
+    private static List<ListenerConfigHolder> MapListenerConfigs<T>(List<T> listenerConfigs)
         where T : ListenerOptions
     {
         if (listenerConfigs == null || listenerConfigs.Count == 0) return null;
