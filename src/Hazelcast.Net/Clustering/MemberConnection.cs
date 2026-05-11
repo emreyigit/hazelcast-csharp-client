@@ -314,7 +314,7 @@ namespace Hazelcast.Clustering
 #pragma warning restore CA1801
 #pragma warning restore IDE0079
         {
-            await DisposeAsync().CfAwait();
+            await DisposeAsync().CfAwaitNoThrow();
         }
 
         /// <summary>
